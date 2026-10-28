@@ -1,0 +1,10 @@
+{
+  "name": "voter-register-offline",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Offline-first family and voter record management dashboard",
+  "scripts": {
+    "check": "node --check assets/js/app.js && node tests/smoke.cjs",
+    "serve": "npx --yes http-server . -p 8080 -c-1"
+  }
+}
