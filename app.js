@@ -86,3 +86,18 @@ editor();apply();
 
  const oldRender=render;render=function(){oldRender();renderFamilies()};renderFamilies();
 })();
+
+
+// Firebase bridge: browser storage remains a fallback backup; online data is authoritative after login.
+let firebaseBridge=null;
+const originalSave=save;
+save=function(){originalSave();if(firebaseBridge?.isReady())firebaseBridge.save({records:data,history})};
+const originalLogChange=logChange;
+// Do not automatically upload old browser records. They remain in localStorage until an explicit restore.
+import('./firebase-sync.js').then(({startBridge})=>{
+ firebaseBridge=startBridge({
+  load(records,events){data=records;history=events;originalSave();render();renderHistory()},
+  localSnapshot(){return {records:JSON.parse(localStorage.getItem(KEY)||'[]'),history:JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]')}},
+  setStatus(value){const el=document.getElementById('syncStatus');if(el)el.textContent=value}
+ });
+}).catch(err=>{document.getElementById('firebaseMessage').textContent='Firebase could not load: '+err.message});
