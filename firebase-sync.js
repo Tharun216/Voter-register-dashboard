@@ -17,7 +17,7 @@ export function startBridge({load,localSnapshot,setStatus}){
   ready=false;user=current;remoteRef=doc(db,'users',current.uid,'dashboard','main');status('Loading online records…');
   try{const snap=await getDoc(remoteRef);if(auth.currentUser?.uid!==current.uid)return;
    cloudExists=snap.exists();if(cloudExists){const value=snap.data();if(!Array.isArray(value.records)||!Array.isArray(value.history))throw Error('Unexpected online data format');load(value.records,value.history)}else{load([],[])}
-   ready=true;gate.style.display='none';layout.style.display='';logout.hidden=false;upload.hidden=cloudExists;setStatus(cloudExists?'Online · records loaded':'Online · empty database (local backup not uploaded)');
+   ready=true;gate.style.display='none';layout.style.setProperty('display','flex','important');logout.hidden=false;upload.hidden=cloudExists;setStatus(cloudExists?'Online · records loaded':'Online · empty database (local backup not uploaded)');
   }catch(err){ready=false;status('Unable to load records. Check your Firestore rules and internet connection: '+err.message)}
  });
  upload.addEventListener('click',async()=>{if(!ready||cloudExists)return;const snapshot=initialLocal;if(!snapshot.records.length){alert('No local records to upload. You can restore a JSON backup first.');return}if(!confirm('Upload '+snapshot.records.length+' records from this browser to your online database? Only use dummy records until privacy and security checks are complete.'))return;try{await setDoc(remoteRef,{...snapshot,updatedAt:new Date().toISOString()});cloudExists=true;load(snapshot.records,snapshot.history);upload.hidden=true;setStatus('Online · local records uploaded')}catch(err){alert('Upload failed: '+err.message)}});
